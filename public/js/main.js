@@ -14,21 +14,39 @@ socket.on('disconnect', () => {
 // listen for event from server
 //to display the msg
 socket.on('newMessage', function (message) {
+    // console.log('new messega', message);
+    // var li = $('<li></li>');
+    // li.text(message.from +" "+ formatedTime+': ' + message.text);
+    // $('#messages').append(li);
     var formatedTime = moment(message.createdAt).format('hh:mm a');
-    console.log('new messega', message);
-    var li = $('<li></li>');
-    li.text(message.from +" "+ formatedTime+': ' + message.text);
-    $('#messages').append(li);
+
+    var template = $('#message-template').html();
+    var html = Mustache.render(template, {
+        text: message.text,
+        from: message.from,
+        createdAt:formatedTime
+    });
+    $('#messages').append(html);
+    scrollToBottom();
+
 });
 
 socket.on('newLocationMessage',function(message){
     var formatedTime = moment(message.createdAt).format('hh:mm a');
-    var li = $('<li></li>');
-    var a = $('<a target="_blank">My current location</a>');
-    li.text(message.from + " " +formatedTime );
-    a.attr('href',message.url);
-    li.append(a);
-    $('#messages').append(li);
+    // var li = $('<li></li>');
+    // var a = $('<a target="_blank">My current location</a>');
+    // li.text(message.from + " " +formatedTime );
+    // a.attr('href',message.url);
+    // li.append(a);
+    // $('#messages').append(li);
+    var template = $('#location-message-template').html();
+    var html = Mustache.render(template, {
+        from: message.from,
+        url: message.url,
+        createdAt:formatedTime
+    });
+    $('#messages').append(html);
+    scrollToBottom();
 
 });
 
@@ -41,10 +59,28 @@ socket.emit('createMessage', {
     console.log('Got It');
 
 })
+function scrollToBottom() {
+    // selectors
+    var messages = $('#messages');
+    var newMessage = messages.children('li:last-child');
 
+    //heights
+    var clientHeight = messages.prop('clientHeight');
+    var scrollTop = messages.prop('scrollTop');
+    var scrollHeight = messages.prop('scrollHeight');
+    var newMessageHeight = newMessage.innerHeight();
+    var lastMessageHeight = newMessage.prev().innerHeight();
+
+    if (clientHeight+scrollTop+newMessageHeight+lastMessageHeight >= scrollHeight) {
+        messages.scrollTop(scrollHeight);
+    }
+
+}
 
 
 $(document).ready(
+    
+
     $('#message-form').on('submit', function (e) {
         e.preventDefault();
 
