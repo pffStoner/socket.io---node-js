@@ -4,11 +4,33 @@ var locationn = $('#location');
 
 socket.on('connect', () => {
     console.log('connected to server');
+    var params = jQuery.deparam(window.location.search);
+
+    socket.emit('join',params, function(err){
+        if (err) {
+            //TODO
+            console.log(err);
+        }else {
+            console.log('No error');
+
+        }
+    });
 });
 
 socket.on('disconnect', () => {
     console.log('disconnected to server');
 
+});
+
+socket.on('updatedList', function (users) {
+    var ol = $('<ol></ol>');
+
+    users.forEach(function (user){
+        ol.append($('<li></li>').text(user));
+    });
+
+  $('#users').html(ol);
+   
 });
 
 // listen for event from server
@@ -51,14 +73,14 @@ socket.on('newLocationMessage',function(message){
 });
 
 
-socket.emit('createMessage', {
-    from: 'Mitko',
-    text: 'text'
-    //event acknowledgements
-}, function (data) {
-    console.log('Got It');
+// socket.emit('createMessage', {
+//     from: 'Mitko',
+//     text: 'text'
+//     //event acknowledgements
+// }, function (data) {
+//     console.log('Got It');
 
-})
+// })
 function scrollToBottom() {
     // selectors
     var messages = $('#messages');
@@ -85,7 +107,6 @@ $(document).ready(
         e.preventDefault();
 
         socket.emit('createMessage', {
-            from: 'User',
             text: $('[name=message]').val()
         }, function(){
             $('[name=message]').val('')
